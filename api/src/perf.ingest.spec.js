@@ -8,7 +8,7 @@ const perf = require('./perf');
 const host = require("./services").testHost;
 const testOCFLConf = require('./services').testOCFLConf;
 const testCreate = require('./services').testCreate;
-const ocflTools = require('oni-ocfl');
+const ocfltools = require('oni-ocfl');
 const { makedir } = require('./services/random');
 const { it } = require('date-fns/locale');
 const { async } = require('hasha');
@@ -33,7 +33,7 @@ describe("Load test", () => {
     const crates = await fs.readdir(perfDataDir);
     const ocflPath = workingPath('/opt/storage/oni/ocfl');
     testOCFLConf.create = testCreate;
-    const repo = await ocflTools.connectRepo(ocflPath);
+    const repo = await ocfltools.connectRepo(ocflPath);
     console.log(`Trying to load: ${ crates.length } objects`);
     let i = 0;
     for (const ro of crates) {
@@ -45,7 +45,7 @@ describe("Load test", () => {
         "roCrate": "ro-crate-metadata.json"
       };
       console.log(`${ i } : ${ col.roCrateDir + "/" + col.roCrate }`);
-      await ocflTools.loadCollection({ repo, ocfl: testOCFLConf, col });
+      await ocfltools.loadCollection({ repo, ocfl: testOCFLConf, col });
     }
     expect(crates.length).toBe(100);
   });

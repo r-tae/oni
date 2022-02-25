@@ -15,7 +15,7 @@ export async function initOCFL({ configuration }) {
   const license = configuration.api.license;
   const identifier = configuration.api.identifier;
   try {
-    const records = await ocfltools.loadFromOcfl(ocfl.ocflPath, ocfl.catalogFilename, ocfl.hashAlgorithm);
+    const records = await ocfltools.loadFromOcfl(ocfl.ocflPath);
     let i = 0;
     log.info(`Loading records: ${ records.length }`);
     for (let record of records) {

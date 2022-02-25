@@ -20,7 +20,7 @@ describe("Test request 1 item", () => {
 
     const record = await getRecord({recordId: id});
     const ocflObject = new OcflObject(record['diskPath']);
-    const filePath = await ocfltools.getItem(ocflObject, testOCFLConf.catalogFilename, itemId);
+    const filePath = await ocfltools.getItem({diskPath: record['diskPath'], itemId});
     filePath;
 
   });

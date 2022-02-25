@@ -5,7 +5,7 @@ const { getLogger } = require("./index");
 const log = getLogger();
 
 export async function transformURIs({ host, crateId, ocflObject, uridTypes, catalogFilename }) {
-  const json = await ocfltools.readCrate(ocflObject, catalogFilename);
+  const json = await ocfltools.readCrate({diskPath: ocflObject.path});
   const crate = new ROCrate(json);
   crate.index();
   crate.toGraph();

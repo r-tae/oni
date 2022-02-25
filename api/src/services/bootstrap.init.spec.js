@@ -31,11 +31,11 @@ describe("Test loading the configuration", () => {
         const repo = await ocfltools.connectRepo(ocfl.ocflPath);
         const jsonld = fs.readJsonSync(testData.roCrateDir + "/" + testData.roCrate);
         const crate = new ROCrate(jsonld);
-        crate.index();
-        await ocfltools.checkin(repo, 'ATAP', testData.roCrateDir, crate, 'md5')
+        crate.toGraph();
+        await ocfltools.checkin({repo, rocrateDir: testData.roCrateDir, crate});
     })
     test("it should load the ocfl repo", async () => {
-        records = await ocfltools.loadFromOcfl(ocfl.ocflPath, ocfl.catalogFilename, ocfl.hashAlgorithm);
+        records = await ocfltools.loadFromOcfl(ocfl.ocflPath);
         expect(records.length).toBeGreaterThanOrEqual(1);
     });
     test("It should load ocflobjects", () => {
@@ -44,8 +44,7 @@ describe("Test loading the configuration", () => {
     test("It should load an ro-crate", () => {
         const jsonld = records[0]['jsonld'];
         crate = new ROCrate(jsonld);
-        crate.index();
-        //TODO: ask peter if this is useful?
+        crate.toGraph();
         const root = crate.getRootDataset();
         expect(root).not.toBe(undefined);
     });

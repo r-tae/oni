@@ -163,8 +163,7 @@ export async function decodeHash({ id }) {
 
 export async function getRawCrate({ diskPath, catalogFilename, version }) {
   // TODO: return a specific version
-  const ocflObject = new OcflObject(diskPath);
-  const json = await ocfltools.readCrate(ocflObject, catalogFilename);
+  const json = await ocfltools.readCrate({diskPath});
   return json;
 }
 
@@ -184,7 +183,7 @@ export async function getUridCrate({ host, crateId, diskPath, catalogFilename, t
 export async function getFile({ record, itemId, catalogFilename }) {
   try {
     const ocflObject = new OcflObject(record['diskPath']);
-    const filePath = await ocfltools.getItem(ocflObject, catalogFilename, itemId);
+    const filePath = await ocfltools.getItem({diskPath: record['diskPath'], itemId});
 
     const index = filePath.lastIndexOf("/");
     const fileName = filePath.substr(index);

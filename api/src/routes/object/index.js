@@ -6,7 +6,7 @@ import {
   getRecordSingle,
   getRecordMembers,
   getRecordTypes,
-  getResolveParts
+  getResolveParts, getAllRecordConformsTo
 } from './record';
 import { getRecordCrate } from './recordCrate';
 import { getRecordItem } from './recordItem';
@@ -31,7 +31,7 @@ export function setupObjectRoutes({ server, configuration }) {
     } else if (req.query.id) {
       await getRecordSingle({ req, res, next });
     } else {
-      res.json({ message: 'Either id or conformsTo or memberOf parameters are required' }).status(400);
+      await getAllRecordConformsTo({req, res, next});
       next();
     }
   });

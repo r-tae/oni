@@ -17,6 +17,20 @@ export async function getRootConformsToByCrateId({crateId}){
   });
   return conformsTo;
 }
+
+export async function getAllRootConformsTos({ offset = 0, limit = 10 }) {
+  const conformsTo = await models.rootConformsTo.findAll({
+    offset,
+    limit,
+    attributes: { exclude: [ 'id', 'recordId'] },
+    include: [ {
+      model: models.record,
+      attributes: [ 'name', 'license', 'description' ]
+    } ]
+  });
+  return conformsTo;
+}
+
 export async function getRootConformsTos({ conforms, members }) {
 
   try {
