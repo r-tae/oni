@@ -31,6 +31,7 @@ export async function indexCollections({configuration, client}) {
       conforms: 'https://github.com/Language-Research-Technology/ro-crate-profile#Collection'
     });
     let i = 0;
+
     log.debug(`Trying to index: ${rootConformsTos.length}`);
     for (let rootConformsTo of rootConformsTos) {
       const col = rootConformsTo['dataValues'];

@@ -7,27 +7,6 @@
     {
       "type": "node",
       "request": "launch",
-      "name": "API Current File",
-      "program": "${file}",
-      "runtimeExecutable": "${workspaceRoot}/api/node_modules/.bin/babel-node",
-      "runtimeArgs": [
-        "--require",
-        "dotenv/config"
-      ],
-      "sourceMaps": true,
-      "env": {
-        "DOTENV_CONFIG_PATH": "${workspaceRoot}/.env",
-        "BABEL_ENV": "development",
-        "ONI_CONFIG_PATH": "configuration/development-configuration.json"
-      },
-      "console": "integratedTerminal",
-      "internalConsoleOptions": "neverOpen",
-      "outDir": "${workspaceRoot}/api/dist",
-      "cwd": "${workspaceRoot}/api"
-    },
-    {
-      "type": "node",
-      "request": "launch",
       "name": "API Jest current file run all tests",
       "runtimeArgs": [
         "--require",
@@ -47,6 +26,27 @@
         "DOTENV_CONFIG_PATH": "${workspaceRoot}/.env",
         "ONI_CONFIG_PATH": "${workspaceRoot}/configuration/development-configuration.json"
       },
+      "cwd": "${workspaceRoot}/api"
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "API Current File",
+      "program": "${file}",
+      "runtimeExecutable": "${workspaceRoot}/api/node_modules/.bin/babel-node",
+      "runtimeArgs": [
+        "--require",
+        "dotenv/config"
+      ],
+      "sourceMaps": true,
+      "env": {
+        "DOTENV_CONFIG_PATH": "${workspaceRoot}/.env",
+        "BABEL_ENV": "development",
+        "ONI_CONFIG_PATH": "configuration/development-configuration.json"
+      },
+      "console": "integratedTerminal",
+      "internalConsoleOptions": "neverOpen",
+      "outDir": "${workspaceRoot}/api/dist",
       "cwd": "${workspaceRoot}/api"
     }
   ]

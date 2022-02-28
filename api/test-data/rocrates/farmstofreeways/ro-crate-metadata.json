@@ -5,14 +5,6 @@
       "@type": "CreativeWork",
       "@id": "ro-crate-metadata.json",
       "identifier": "ro-crate-metadata.json",
-      "conformsTo": [
-        {
-          "@id": "https://w3id.org/ro/crate/1.1"
-        },
-        {
-          "@id": "https://github.com/Language-Research-Technology/ro-crate-profile#Collection"
-        }
-      ],
       "about": {
         "@id": "./"
       }
@@ -64,6 +56,14 @@
         },
         {
           "@id": "#interviews"
+        }
+      ],
+      "conformsTo": [
+        {
+          "@id": "https://w3id.org/ro/crate/1.1"
+        },
+        {
+          "@id": "https://github.com/Language-Research-Technology/ro-crate-profile#Collection"
         }
       ]
     },

@@ -8,8 +8,8 @@ const log = getLogger();
 export async function recordResolve({ id, getUrid, configuration }) {
   try {
     log.debug(`Get resolve-parts: ${ id }`);
-    const response = [];
-    await resolveProfile({
+    let response = [];
+    response = await resolveProfile({
       crateId: id,
       response: response,
       getUrid: getUrid,
@@ -19,27 +19,8 @@ export async function recordResolve({ id, getUrid, configuration }) {
       return null;
     } else {
       const rocrate = new ROCrate();
-      rocrate.index();
-      log.debug('Create New ROCrate');
-      for (let c of response) {
-        const subcrate = new ROCrate(c);
-        subcrate.toGraph();
-        const rootNamedId = subcrate.getNamedIdentifier(configuration.api.identifier.main);
-        const root = subcrate.getRootDataset();
-        subcrate.changeGraphId(root, rootNamedId);
-        for (let s of subcrate.getFlatGraph()) {
-          rocrate.addItem(s);
-        }
-      }
-      log.debug('Updated all "./" s');
-      //TODO: Someone please take a look at this munging
-      //Now we have an extra ./
-      const index = rocrate.json_ld['@graph'].findIndex((o) => o['@id'] === './');
-      if (index > -1) rocrate.json_ld['@graph'].splice(index, 1);
-      //Deleted and then replaced with the req.query.id
-      findAndReplace(rocrate.json_ld['@graph'], id, './');
-      log.debug('Deleted root "./"');
-      return rocrate.json_ld;
+      rocrate.toGraph();
+      return rocrate.getJson();
     }
   } catch (e) {
     log.error(e);

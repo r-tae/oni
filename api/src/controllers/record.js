@@ -95,6 +95,7 @@ export async function createRecord({ data, memberOfs, atTypes, conformsTos }) {
       });
       await r.addRootConformsTo(conformsTo);
     }
+    return data.crateId;
   } catch (e) {
     log.error('createRecord');
     log.error(e);
