@@ -1,7 +1,11 @@
 module.exports = {
+    darkMode: "class",
     future: {},
     mode: "jit",
-    purge: ["./src/**/*.html", "./src/**/*.{js,jsx,ts,tsx,vue}"],
+    content: [
+      "./src/**/*.html",
+      "./src/**/*.{js,jsx,ts,tsx,vue}",
+    ],
     theme: {
         extend: {},
     },

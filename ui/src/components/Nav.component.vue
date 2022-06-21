@@ -1,7 +1,7 @@
 <template>
   <!-- component -->
   <div class="flex flex-col">
-    <nav class="px-4 flex justify-between bg-white h-10 border-b-2">
+    <nav class="px-4 flex justify-between bg-blue h-10 border-b-2">
       <!-- top bar left -->
       <ul class="flex items-center">
         <li class="h-6 w-6">

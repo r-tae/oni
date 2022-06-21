@@ -39,7 +39,7 @@
       </el-col>
       <el-col :xs="24" :sm="15" :md="16" :lg="18" :xl="20" :span="20" :offset="0" v-loading="this.loading">
         <div>
-          <div class="sticky top-20 z-10 bg-white pb-5">
+          <div class="sticky top-20 z-10 bg-transparent pb-5">
             <el-row v-if="totals" :align="'middle'">
               <div class="divide-solid divide-y-2 divide-red-700 py-4">
                 <div v-if="this.totals['value'] > 0 && !this.isStart">

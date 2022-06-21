@@ -40,6 +40,47 @@
               Your browser does not support the audio element.
             </audio>
           </div>
+          <div class="p-4 overflow-y-scroll" v-else-if="this.type === 'eaf'">
+          <!--<div class="p-4 pl-48 overflow-y-scroll" v-else-if="this.type === 'eaf'">
+						<table>
+							<tr v-for="tier in this.eaf.tiers">
+								<td class="absolute -ml-48 w-44 border-r border-transparent border-r-black bg-gray-50">
+									{{ tier.name }}
+								</td>
+								<td class="whitespace-nowrap">
+									<div class="whitespace-nowrap">
+										<span v-for="anno in tier.annotations" v-if="tier.annotations.length > 0">
+								  		{{ anno }}
+										</span>
+										<span v-else class="invisible">empty row</span>
+									</div>
+								</td>
+							</tr>
+						</table> -->
+						<div class="flex box-border flex-row">
+							<div class="flex flex-col">
+								<div class="h-10 border-b border-black border-r text-xl bg-gray-100">
+								  <!-- empty top left cell -->
+								</div>
+								<div class="h-10 border-b border-black border-r text-xl bg-slate-100 p-2 text-right" v-for="tier in this.eaf.tiers">
+									{{ tier.name }}
+								</div>
+							</div>
+							<div class="flex flex-col">
+								<div class="h-10 border-b border-black text-xl bg-slate-100">
+								  <!-- TODO: this should show a timeline hh:mm:ss:ms or something -->
+								</div>
+								<div class="h-10 bg-gray-100 relative hover:w-fit" v-bind:style="{ width: eaf.duration * 6400 / 60000 + 25 + 'px' }" v-for="tier in this.eaf.tiers">
+								<!-- TODO: move the milliseconds-px conversion somewhere better, and refactor to choose the ratio programmatically, trying to get the full width within a readable range (perhaps allow zooming later) -->
+									<div class="hover:!min-w-fit hover:z-10 h-10 text-sm p-1 hover:drop-shadow hover:bg-gray-100 rounded-lg bg-gray-200 border border-gray-800 whitespace-nowrap absolute overflow-hidden"
+										v-bind:style="{ width: (anno.end - anno.start) * 6400 / 60000 + 'px', left: (anno.start * 6400 / 60000) + 'px' }"
+										v-for="anno in tier.annotations">
+										{{ anno.text}}
+									</div>
+								</div>
+							</div>
+						</div>
+          </div>
           <div class="p-4" v-else-if="this.type === 'video'">
             <video controls>
               <source :src="this.data" :type="this.sourceType">
@@ -137,7 +178,7 @@ export default {
     }
     //TODO: Ask for MIME types
     //TODO: craete some file widgets
-    if (this.path && (this.path.endsWith(".txt") || this.path.endsWith(".csv") || this.path.endsWith(".eaf"))) {
+    if (this.path && (this.path.endsWith(".txt") || this.path.endsWith(".csv"))) {
       this.type = 'txt';
       this.data = await response.text();
       if (this.path.endsWith(".csv")) {
@@ -178,6 +219,73 @@ export default {
           this.type = 'video';
           this.sourceType = 'video/mp4';
           this.data = blobURL;
+        } else if (this.path && this.path.endsWith(".eaf")) {
+					const fileData = []
+
+					const parser = new DOMParser()
+					const xmlDoc = parser.parseFromString(await this.data.text(), "text/xml")
+
+					// build timeSlot dictionary
+					const timeSlots = {}
+					for (const timeSlot of Array.from(xmlDoc.getElementsByTagName("TIME_SLOT"))) {
+						const timeSlotId = timeSlot?.attributes.getNamedItem("TIME_SLOT_ID").value
+						const timeSlotValue = timeSlot?.attributes.getNamedItem("TIME_VALUE").value
+						timeSlots[timeSlotId] = timeSlotValue
+					}
+					const timeSlotRefToTimecode = (id) => timeSlots[id]
+
+					const tiers = Array.from(xmlDoc.getElementsByTagName("TIER")).map(tier => {
+						return {
+							name: tier.attributes.getNamedItem("TIER_ID").value,
+							annotations: Array.from(tier.getElementsByTagName("ALIGNABLE_ANNOTATION")).map(anno => {
+								const text = anno.getElementsByTagName("ANNOTATION_VALUE")[0]?.innerHTML
+								const start = timeSlots[anno.attributes.getNamedItem("TIME_SLOT_REF1").value]
+								const end = timeSlots[anno.attributes.getNamedItem("TIME_SLOT_REF2").value]
+								//TIME_SLOT_REF1="ts18" TIME_SLOT_REF2="ts21"
+								return {
+									text,
+									start,
+									end,
+								}
+							})
+						}
+					})
+					this.eaf = {
+					 	tiers,
+						duration: Math.max.apply(Math, Object.values(timeSlots))
+					}
+					/*
+					tiers.forEach((tier) => {
+					  if (tier.children.length === 0) {
+							// noop
+						} else {
+							const tierName = tier.attributes.getNamedItem("TIER_ID").value
+
+							const annotations = Array.from(tier.getElementsByTagName("ANNOTATION_VALUE"))
+							const annotationsCombined = annotations.reduce((acc, annotation) => {
+								return `${acc} ${annotation.innerHTML}`
+							}, `${tierName}: `)
+							fileData.push(annotationsCombined)
+						}
+					})
+
+				*/
+
+/*
+
+this.eaf.tiers = [
+  { name: "RH_GLOSS_ID", annotations: [
+		text: "HOUSE1A"
+		// TODO: later this should add time information
+	]}
+]
+
+*/
+
+
+          this.type = 'eaf';
+          this.sourceType = 'text/x-eaf+xml';
+					this.data = fileData.join(`\n\n`)
         } else if (this.path && this.path.endsWith(".pdf")) {
           this.type = 'pdf';
           this.pdfdata = pdf.createLoadingTask(blobURL);
