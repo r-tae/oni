@@ -94,6 +94,7 @@
 												background: 'rgb(243 244 246)',
 												} : {}
 										)"
+										@click="jumpToTime(anno.start)"
 										v-for="anno in tier.annotations">
 										{{ anno.text }}
 									</div>
@@ -358,7 +359,12 @@ export default {
 		handleSeeked(event) {
 			this.videoTime = event.target.currentTime * 1000
 		},
-		toggleShowEmptyTiers() {
+		jumpToTime(time) {
+		  // HACK: assumes there is only one video on the page
+      let video = this.$el.querySelector('video')
+      video.currentTime = time / 1000
+    },
+  	toggleShowEmptyTiers() {
 			this.showEmptyTiers = !this.showEmptyTiers
 		},
 		filterTiers(tiers) {
