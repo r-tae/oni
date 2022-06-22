@@ -40,10 +40,21 @@
               Your browser does not support the audio element.
             </audio>
           </div>
-          <div class="h-screen" v-else-if="this.type === 'eaf'">
+          <div class="h-max" v-else-if="this.type === 'eaf'">
+					  <div>
+            	<video @play="handleVideoPlay" @pause="handleVideoPause" @seeking="handleSeeking" @seeked="handleSeeked" controls>
+              	<source :src="this.eaf.videoURL" type="video/mp4">
+              	Your browser does not support the video element.
+            	</video>
+						</div>
 						<div>
 							<button @click="toggleShowEmptyTiers">
-								{{ this.showEmptyTiers ? "Show empty tiers" : "Hide empty tiers" }}
+								{{
+									this.showEmptyTiers ?
+										"Show empty tiers"
+										:
+										"Hide empty tiers"
+								}}
 							</button>
 						</div>
 						<div class="overflow-scroll h-screen flex box-border flex-row">
@@ -54,7 +65,8 @@
 									{{ tier.name }}
 								</div>
 							</div>
-							<div class="flex flex-col h-max">
+							<div class="flex flex-col h-max relative">
+								<div class="left-0 w-px absolute h-screen bg-red-500 z-50" v-bind:style="{ transform: 'translate(' + calculateSizeFromTime(this.eaf.duration, this.videoTime) + 'px)' }"/>
 								<div class="sticky top-0 z-10 h-5 border-b border-black text-xs bg-slate-100 flex flex-row">
 								  <!-- TODO: add vertical lines on the second (will have to use repeating linear gradient based) -->
 									<div v-bind:style="{ width: calculateSizeFromTime(this.eaf.duration, 1000) + 'px' }"
@@ -69,8 +81,19 @@
 										'//background-image': 'repeating-linear-gradient(90deg, transparent, transparent ' + (calculateSizeFromTime(this.eaf.duration, 1000) - 1) + 'px, #e5e7eb ' + (calculateSizeFromTime(this.eaf.duration, 1000) - 1) + 'px, #e5e7eb ' + calculateSizeFromTime(this.eaf.duration, 1000) + 'px)'
 									}"
 									v-for="tier in filterTiers(this.eaf.tiers)">
-									<div class="hover:!min-w-fit hover:z-10 h-10 text-sm p-1 overflow-hidden hover:drop-shadow hover:bg-gray-100 rounded-md bg-gray-200 border border-gray-800 whitespace-nowrap absolute"
-										v-bind:style="{ width: calculateSizeFromTime(this.eaf.duration, anno.end - anno.start) + 'px', left: calculateSizeFromTime(this.eaf.duration, anno.start) + 'px' }"
+									<div
+										class="hover:!min-w-fit hover:z-10 h-10 text-sm p-1 overflow-hidden hover:drop-shadow hover:bg-gray-100 rounded-md bg-gray-200 border border-gray-800 whitespace-nowrap absolute"
+										v-bind:style="Object.assign(
+											{
+												width: calculateSizeFromTime(this.eaf.duration, anno.end - anno.start) + 'px',
+												left: calculateSizeFromTime(this.eaf.duration, anno.start) + 'px',
+											},
+											anno.start < this.videoTime && this.videoTime < anno.end ? {
+												'min-width':  'fit-content',
+												'z-index': '10',
+												background: 'rgb(243 244 246)',
+												} : {}
+										)"
 										v-for="anno in tier.annotations">
 										{{ anno.text }}
 									</div>
@@ -131,6 +154,8 @@ export default {
       errorMessage: '',
       error: '',
 			ratio: null,
+			videoTime: null,
+			videoUpdateIntervalID: null,
 			showEmptyTiers : false,
   		calculateSizeFromTime: function (fullDuration, time) {
 				const lerp = (a, b, t) => a + (b - a) * Math.min(1, t)
@@ -239,6 +264,23 @@ export default {
         } else if (this.path && this.path.endsWith(".eaf")) {
 					const fileData = []
 
+    			let route = `/object/open?id=${decodeURIComponent(this.parentId)}`;
+      		let sibling_objects = await this.$http.get({route: route});
+
+					// TODO: error handling
+
+					sibling_objects = await sibling_objects.json()
+					console.log(sibling_objects)
+
+					// HACK: the objects on the parent are provided as urls that look like http://localhost:8080/stream?id=arcp://name,auslan/item/BSS_c6ii I don't know why
+					let videoId = sibling_objects.parts.find(x => x["@id"].slice(-3) == "mp4")["@id"].slice(32)
+
+    			let videoRoute = `/object/open?id=${decodeURIComponent(videoId)}`;
+      		let videoBlob = await (await this.$http.get({route: videoRoute, path: videoRoute})).blob()
+					let videoURL = window.URL.createObjectURL(videoBlob)
+					console.log({videoURL})
+
+
 					const parser = new DOMParser()
 					const xmlDoc = parser.parseFromString(await this.data.text(), "text/xml")
 
@@ -269,6 +311,7 @@ export default {
 					})
 					this.eaf = {
 					 	tiers,
+					 	videoURL,
 						duration: Math.max.apply(Math, Object.values(timeSlots))
 					}
           this.type = 'eaf';
@@ -299,7 +342,23 @@ export default {
       const title = first(this.meta['name']);
       return title?.['@value'] || this.meta['@id'];
     },
-		toggleShowEmptyTiers: function() {
+		handleVideoPlay(event) {
+			this.videoTime = event.target.currentTime * 1000
+			this.videoUpdateIntervalID = setInterval(() => {
+				this.videoTime = this.videoTime + 100
+			}, 100)
+		},
+		handleVideoPause(event) {
+			clearInterval(this.videoUpdateIntervalID)
+			this.videoTime = event.target.currentTime * 1000
+		},
+		handleSeeking(event) {
+			this.videoTime = event.target.currentTime * 1000
+		},
+		handleSeeked(event) {
+			this.videoTime = event.target.currentTime * 1000
+		},
+		toggleShowEmptyTiers() {
 			this.showEmptyTiers = !this.showEmptyTiers
 		},
 		filterTiers(tiers) {
