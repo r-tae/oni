@@ -48,13 +48,23 @@
             	</video>
 						</div>
 						<div>
+							<!-- TODO: add a help button/dialog here, it should explain the major differences from elan (e.g. cannot select, no granular zoom controls, cannot only jump in video by clicking an anno)-->
+							<!-- TODO: add click to jump in video arbitrarily, not just on annotations. Should be able to do this by adding an onclick listener to the flexbox that holds the anno (sibling to the tier names one), it should get relative coords in it? which we can run divide by this.ratio -->
 							<button @click="toggleShowEmptyTiers">
 								{{
 									this.showEmptyTiers ?
-										"Show empty tiers"
-										:
 										"Hide empty tiers"
+										:
+										"Show empty tiers"
 								}}
+							</button>
+							<button class="text-xl" @click="zoomIn">
+							<!-- TODO: Put a proper zoom icon here -->
+							 +
+							</button>
+							<button class="text-xl" @click="zoomOut">
+							<!-- TODO: Put a proper zoom icon here -->
+							 -
 							</button>
 						</div>
 						<div class="overflow-scroll h-screen flex box-border flex-row">
@@ -68,7 +78,6 @@
 							<div class="flex flex-col h-max relative">
 								<div class="left-0 w-px absolute h-screen bg-red-500 z-50" v-bind:style="{ transform: 'translate(' + calculateSizeFromTime(this.eaf.duration, this.videoTime) + 'px)' }"/>
 								<div class="sticky top-0 z-10 h-5 border-b border-black text-xs bg-slate-100 flex flex-row">
-								  <!-- TODO: add vertical lines on the second (will have to use repeating linear gradient based) -->
 									<div v-bind:style="{ width: calculateSizeFromTime(this.eaf.duration, 1000) + 'px' }"
 										class="border-r border-black h-full self-end" v-for="sec in Math.floor(this.eaf.duration / 1000 + 1)">
 									  <!-- HACK: this is spaghetti code but it does work, it outputs the time in the format M:ss, there are no hours shown -->
@@ -78,22 +87,15 @@
 								<div class="h-10 even:bg-slate-100 odd:bg-slate-200 relative hover:w-fit"
 									v-bind:style="{
 										width: calculateSizeFromTime(this.eaf.duration, this.eaf.duration) + 25 + 'px',
-										'//background-image': 'repeating-linear-gradient(90deg, transparent, transparent ' + (calculateSizeFromTime(this.eaf.duration, 1000) - 1) + 'px, #e5e7eb ' + (calculateSizeFromTime(this.eaf.duration, 1000) - 1) + 'px, #e5e7eb ' + calculateSizeFromTime(this.eaf.duration, 1000) + 'px)'
+										'// NOTE: this background-image can add the second lines to all of the tier rows': 'repeating-linear-gradient(90deg, transparent, transparent ' + (calculateSizeFromTime(this.eaf.duration, 1000) - 1) + 'px, #e5e7eb ' + (calculateSizeFromTime(this.eaf.duration, 1000) - 1) + 'px, #e5e7eb ' + calculateSizeFromTime(this.eaf.duration, 1000) + 'px)'
 									}"
 									v-for="tier in filterTiers(this.eaf.tiers)">
 									<div
-										class="hover:!min-w-fit hover:z-10 h-10 text-sm p-1 overflow-hidden hover:drop-shadow hover:bg-gray-100 rounded-md bg-gray-200 border border-gray-800 whitespace-nowrap absolute"
-										v-bind:style="Object.assign(
-											{
+										class="h-10 text-sm p-1 overflow-hidden hover:drop-shadow hover:bg-gray-100 rounded-md bg-gray-200 border border-gray-800 whitespace-nowrap absolute"
+										v-bind:style="{
 												width: calculateSizeFromTime(this.eaf.duration, anno.end - anno.start) + 'px',
 												left: calculateSizeFromTime(this.eaf.duration, anno.start) + 'px',
-											},
-											anno.start < this.videoTime && this.videoTime < anno.end ? {
-												'min-width':  'fit-content',
-												'z-index': '10',
-												background: 'rgb(243 244 246)',
-												} : {}
-										)"
+											}"
 										@click="jumpToTime(anno.start)"
 										v-for="anno in tier.annotations">
 										{{ anno.text }}
@@ -366,6 +368,14 @@ export default {
     },
   	toggleShowEmptyTiers() {
 			this.showEmptyTiers = !this.showEmptyTiers
+		},
+		zoomIn() {
+			this.ratio += this.ratio*0.25
+			console.log(this.ratio)
+		},
+		zoomOut() {
+			this.ratio -= this.ratio*0.25
+			console.log(this.ratio)
 		},
 		filterTiers(tiers) {
 			if (this.showEmptyTiers) {
